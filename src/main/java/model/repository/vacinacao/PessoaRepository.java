@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.List;
 
 import model.entity.Pessoa;
 import model.Banco;
@@ -48,7 +49,7 @@ public class PessoaRepository implements BaseRepository<Pessoa> {
 		Connection conn = Banco.getConnection();
 		Statement stmt = Banco.getStatement(conn);
 		boolean excluiu = false;
-		String query = " DELETE FROM pessoa WHERE id = " + id;
+		String query = "DELETE FROM pessoa WHERE id = " + id;
 		try {
 			if(stmt.executeUpdate(query) == 1) {
 				excluiu = true;
@@ -66,8 +67,8 @@ public class PessoaRepository implements BaseRepository<Pessoa> {
 	@Override
 	public boolean alterar(Pessoa pessoaEditada) {
 		boolean alterou = false;
-		String query = " UPDATE VacinaSQL.pessoa "
-				     + " SET nome=?, cpf=?, sexo=?, id_pais=?, "
+		String query = " UPDATE exemplos.pessoa "
+				     + " SET nome=?, cpf=?, sexo=?, id_pais=? "
 				     + " data_nascimento=?, tipo=? "
 				     + " WHERE id=? ";
 		Connection conn = Banco.getConnection();
@@ -142,17 +143,7 @@ public class PessoaRepository implements BaseRepository<Pessoa> {
 		try{
 			resultado = stmt.executeQuery(query);
 			while(resultado.next()){
-				Pessoa pessoa = new Pessoa();
-				pessoa.setId(resultado.getInt("ID"));
-				pessoa.setNome(resultado.getString("NOME"));
-				pessoa.setCpf(resultado.getString("CPF"));
-				pessoa.setSexo(resultado.getString("SEXO").charAt(0));
-				pessoa.setDataNascimento(resultado.getDate("DATA_NASCIMENTO").toLocalDate()); 
-				pessoa.setTipo(resultado.getInt("TIPO"));
-				
-				PaisRepository paisRepository = new PaisRepository();
-				pessoa.setPaisOrigem(paisRepository.consultarPorId(resultado.getInt("ID_PAIS")));
-				
+				Pessoa pessoa = construirDoResultSet(resultado);
 				pessoas.add(pessoa);
 			}
 		} catch (SQLException erro){
@@ -164,6 +155,21 @@ public class PessoaRepository implements BaseRepository<Pessoa> {
 			Banco.closeConnection(conn);
 		}
 		return pessoas;
+	}
+
+	private Pessoa construirDoResultSet(ResultSet resultado) throws SQLException {
+		Pessoa pessoa = new Pessoa();
+		pessoa.setId(resultado.getInt("ID"));
+		pessoa.setNome(resultado.getString("NOME"));
+		pessoa.setCpf(resultado.getString("CPF"));
+		pessoa.setSexo(resultado.getString("SEXO").charAt(0));
+		pessoa.setDataNascimento(resultado.getDate("DATA_NASCIMENTO").toLocalDate()); 
+		pessoa.setTipo(resultado.getInt("TIPO"));
+		
+		PaisRepository paisRepository = new PaisRepository();
+		pessoa.setPaisOrigem(paisRepository.consultarPorId(resultado.getInt("ID_PAIS")));
+		
+		return pessoa;
 	}
 
 	public boolean cpfJaCadastrado(String cpf) {
@@ -181,5 +187,30 @@ public class PessoaRepository implements BaseRepository<Pessoa> {
 		}
 		
 		return cpfJaUtilizado;
+	}
+
+	public List<Pessoa> consultarPesquisadores() {
+		ArrayList<Pessoa> pessoas = new ArrayList<>();
+		Connection conn = Banco.getConnection();
+		Statement stmt = Banco.getStatement(conn);
+		
+		ResultSet resultado = null;
+		String query = " SELECT * FROM pessoa WHERE tipo = " + Pessoa.PESQUISADOR;
+		
+		try{
+			resultado = stmt.executeQuery(query);
+			while(resultado.next()){
+				Pessoa pessoa = construirDoResultSet(resultado);
+				pessoas.add(pessoa);
+			}
+		} catch (SQLException erro){
+			System.out.println("Erro ao consultar todos os pesquisadores");
+			System.out.println("Erro: " + erro.getMessage());
+		} finally {
+			Banco.closeResultSet(resultado);
+			Banco.closeStatement(stmt);
+			Banco.closeConnection(conn);
+		}
+		return pessoas;
 	}
 }
