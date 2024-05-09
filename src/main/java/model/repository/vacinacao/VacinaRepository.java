@@ -7,7 +7,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-
 import model.entity.Pessoa;
 import model.entity.Vacina;
 import model.Banco;
@@ -178,24 +177,11 @@ public class VacinaRepository implements BaseRepository<Vacina> {
 					 + " inner join pais p on v.id_pais = p.id "
 					 + " inner join pessoa pe on v.id_pesquisador = pe.id  ";
 		
-		boolean primeiro = true;
-		if(seletor.getNomeVacina() != null) {
-			if(primeiro) {
-				query += " WHERE ";
-			}else {
-				query += " AND ";
-			}
-			query += "upper(v.nome) LIKE UPPER('%" + seletor.getNomeVacina() + "%')";
-			primeiro = false;
-		}
+		query = incluirFiltros(seletor, query);
 		
-		if(seletor.getNomePais() != null) {
-			if(primeiro) {
-				query += " WHERE ";
-			}else {
-				query += " AND ";
-			}
-			query += " upper(p.nome) LIKE UPPER('%" + seletor.getNomePais() + "%')";
+		if(seletor.temPaginação()) {
+			query += " LIMIT " + seletor.getLimite();
+			query += " OFFSET " + seletor.getOffset();
 		}
 		
 		try{
@@ -224,5 +210,90 @@ public class VacinaRepository implements BaseRepository<Vacina> {
 			Banco.closeConnection(conn);
 		}
 		return vacinas;
+	}
+
+	private String incluirFiltros(VacinaSeletor seletor, String query) {
+		boolean primeiro = true;
+		if(seletor.getNomeVacina() != null) {
+			if(primeiro) {
+				query += " WHERE ";
+			}else {
+				query += " AND ";
+			}
+			query += "upper(v.nome) LIKE UPPER('%" + seletor.getNomeVacina() + "%')";
+			primeiro = false;
+		}
+		
+		if(seletor.getNomePais() != null) {
+			if(primeiro) {
+				query += " WHERE ";
+			}else {
+				query += " AND ";
+			}
+			query += " upper(p.nome) LIKE UPPER('%" + seletor.getNomePais() + "%')";
+		}
+		
+		if(seletor.getNomePesquisador() != null) {
+			if(primeiro) {
+				query += " WHERE ";
+			}else {
+				query += " AND ";
+			}
+			query += " upper(pe.nome) LIKE UPPER('%" + seletor.getNomePesquisador() + "%')";
+		}
+		
+		if(seletor.getDataInicioPesquisa() != null) {
+			
+			if(primeiro) {
+				query += " WHERE ";
+			}else {
+				query += " AND ";
+			}
+			query += " v.data_inicio_pesquisa =  '" + seletor.getDataInicioPesquisa() + "'";
+		}
+		
+		return query;
+	}
+
+	public int contarTotalRegistros(VacinaSeletor seletor) {
+		Connection conn = Banco.getConnection();
+		Statement stmt = Banco.getStatement(conn);
+		
+		int totalRegistros = 0;
+		ResultSet resultado = null;
+		String query = " select COUNT(v.ID) from vacina v "
+					 + " inner join pais p on v.id_pais = p.id "
+					 + " inner join pessoa pe on v.id_pesquisador = pe.id  ";
+		
+		query = incluirFiltros(seletor, query);
+		
+		try{
+			resultado = stmt.executeQuery(query);
+			if(resultado.next()){
+				totalRegistros = resultado.getInt(1);
+			}
+		} catch (SQLException erro){
+			System.out.println("Erro ao contar as vacinas filtradas");
+			System.out.println("Erro: " + erro.getMessage());
+		} finally {
+			Banco.closeResultSet(resultado);
+			Banco.closeStatement(stmt);
+			Banco.closeConnection(conn);
+		}
+		return totalRegistros;
+	}
+
+	public int contarPaginas(VacinaSeletor seletor) {
+		int totalPaginas = 0;
+		int totalRegistros = this.contarTotalRegistros(seletor);	
+		
+		totalPaginas =  totalRegistros / seletor.getLimite();
+		int resto = totalRegistros % seletor.getLimite(); 
+		
+		if(resto > 0) {
+			totalPaginas++;
+		}
+		
+		return totalPaginas;
 	}
 }
