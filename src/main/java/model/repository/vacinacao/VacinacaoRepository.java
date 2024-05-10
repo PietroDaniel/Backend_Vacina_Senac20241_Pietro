@@ -6,8 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-
-import model.entity.Pessoa;
 import model.entity.Vacina;
 import model.entity.Vacinacao;
 import model.Banco;
@@ -17,7 +15,7 @@ public class VacinacaoRepository implements BaseRepository<Vacinacao> {
 
 	@Override
 	public Vacinacao salvar(Vacinacao novaAplicacaoVacina) {
-		String sql = " INSERT INTO VacinaSQL.aplicacao_vacina "
+		String sql = " INSERT INTO exemplos.aplicacao_vacina "
 				+ " (id_pessoa, id_vacina, data_aplicacao, avaliacao) "
 				+ " VALUES(?, ?, ?, ?) ";
 		Connection conexao = Banco.getConnection();

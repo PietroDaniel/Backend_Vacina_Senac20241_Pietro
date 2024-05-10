@@ -3,9 +3,7 @@ package service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
 import exception.VacinacaoException;
-import jakarta.validation.ValidationException;
 import model.entity.Pessoa;
 import model.entity.Vacina;
 import model.entity.Vacinacao;

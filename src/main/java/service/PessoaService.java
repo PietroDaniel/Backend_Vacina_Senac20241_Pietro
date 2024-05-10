@@ -2,13 +2,10 @@ package service;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import exception.VacinacaoException;
-import jakarta.validation.ValidationException;
 import model.entity.Pessoa;
 import model.entity.Vacinacao;
 import model.repository.vacinacao.PessoaRepository;
-import model.repository.vacinacao.VacinaRepository;
 import model.repository.vacinacao.VacinacaoRepository;
 
 public class PessoaService {
