@@ -32,6 +32,7 @@ public class VacinaController {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/salvar")
 	public Vacina salvar(Vacina novaVacina){
 		 return service.salvar(novaVacina);
 	}
@@ -39,6 +40,7 @@ public class VacinaController {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.TEXT_PLAIN)
+	@Path("/alterar")
 	public boolean atualizar(Vacina vacinaEditada){
 		 return service.atualizar(vacinaEditada);
 	}

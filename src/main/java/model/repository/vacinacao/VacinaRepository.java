@@ -7,7 +7,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-
 import model.entity.Pessoa;
 import model.entity.Vacina;
 import model.Banco;
@@ -242,6 +241,16 @@ public class VacinaRepository implements BaseRepository<Vacina> {
 				query += " AND ";
 			}
 			query += " upper(pe.nome) LIKE UPPER('%" + seletor.getNomePesquisador() + "%')";
+		}
+		
+		
+		  if(seletor.getDataInicioPesquisa() != null) {
+			if(primeiro) {
+				query += " WHERE ";
+			}else {
+				query += " AND ";
+			}
+			query += " (v.data_inicio_pesquisa) = '" + seletor.getDataInicioPesquisa() + "'";
 		}
 		
 		return query;
